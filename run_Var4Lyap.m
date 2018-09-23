@@ -60,7 +60,7 @@ for ndemo = 1:Ndemo
     Ytr = [Ytr Xtrtemp(:,2:end)];   x_train(:,:,ndemo) = Xtrtemp;
 end
 dXtr = Ytr-Xtr;
-% Ytr(:,end+1) = [0,0]; Xtr(:,end+1) = [0,0]; dXtr(:,end+1) = [0,0]; % impose equilibrium point
+Ytr(:,end+1) = [0,0]; Xtr(:,end+1) = [0,0]; dXtr(:,end+1) = [0,0]; % impose equilibrium point
 [E, Ntr] = size(Xtr);
 x0 = cell2mat(cellfun(@(v) v(:,1), demos,'UniformOutput', false));
 
