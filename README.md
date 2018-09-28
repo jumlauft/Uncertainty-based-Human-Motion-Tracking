@@ -18,3 +18,12 @@ https://gitlab.lrz.de/ga68car/cphs2018ucld.git
 
 Please send your feedbacks or questions to:
 jonas.umlauft_at_tum.de
+
+The software makes use of the following software package:
+GAUSSIAN PROCESS REGRESSION AND CLASSIFICATION Toolbox version 3.6 for GNU Octave 3.2.x and Matlab 7.x
+
+The code is released under the FreeBSD License.
+
+Copyright (c) 2005-2015 Carl Edward Rasmussen & Hannes Nickisch. 
+All rights reserved.
+The code and associated documentation is available from http://gaussianprocess.org/gpml/code.
