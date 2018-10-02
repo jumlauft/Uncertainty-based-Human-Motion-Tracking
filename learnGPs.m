@@ -14,6 +14,9 @@ function [GPm,GPs2, hyp,iKn, beta] = learnGPs(X,Y,parGP)
 % Out:
 %     GPm   fhandle      E x N -> D x N   mean function
 %     GPs2  fhandle      E x N -> D x N   variance function
+%     hyp   ? x 1       optimized hyperparameters
+%     iKn   N x N       Inverse Gram matrix
+%     beta  N x 1       precomputed iKn*y
 % E: Dimensionality of x
 % Ntr: Number of training points
 %

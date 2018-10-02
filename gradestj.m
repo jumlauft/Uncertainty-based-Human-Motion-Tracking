@@ -1,4 +1,4 @@
-function [dVdx] = gradestj(fun,x0, eps)
+function dVdx = gradestj(fun,x0, eps)
 % GRADESTJ Computes numerical gradient of scalar function
 % In:
 %    x0      E x N      Point where gradient computed

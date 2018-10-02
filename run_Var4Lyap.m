@@ -1,8 +1,7 @@
 % Copyright (c) by Jonas Umlauft and Lukas Poehler (TUM) under BSD License 
-% Last modified: Lukas Poehler 2018-09
+% Last modified: Jonas Umlauft 2018-10
 
-clear; close all; clc;
-addpath(genpath('gpml'));
+clear; close all; clc; rng default; addpath(genpath('gpml'));
 
 %% Set parameters
 ds = 5;               % Downsampling of training data
@@ -48,14 +47,13 @@ eps = 1e-4;         % distance for gradient computation
 % Visualization
 Nte = 1e3;              % Number of testpoints in the surf grid
 gmte = 5;              % Grid margin outside of training points
+dss = 2;                % density of stream slice
 
 
 
 %% A --- Preprocessing
-close all; rng default
-
-
 % Get Training data
+disp('Process Training Data...')
 demos = load(['Data', '.mat'],'demos');  demos=demos.demos;
 Ndemo = length(demos); Xtr= []; Ytr= []; x_train = [];
 for ndemo = 1:Ndemo
@@ -86,7 +84,7 @@ Xgrid1 = reshape(Xgrid(1,:),Ndgrid,Ndgrid); Xgrid2 = reshape(Xgrid(2,:),Ndgrid,N
 
 
 %% B ---  Learn GPSSM from training data
-disp(['Learn GPSSM...'])
+disp('Learn GPSSM...')
 % using GPML
 [~,~,hyp] = learnGPs(Xtr,dXtr,optGP);
 
@@ -99,7 +97,7 @@ disp(['Learn GPSSM...'])
 
 %% C ---  Run Vvar approach
 % Learn CLF
-disp(['Stabilize GPSSM...'])
+disp('Stabilize GPSSM...')
 [P_SOS, val_SOS] = learnSOS(Xtr,Ytr,optLL);
 Vclf = @(x) SOS(x,P_SOS,optLL.dSOS);
 
@@ -107,50 +105,41 @@ Vclf = @(x) SOS(x,P_SOS,optLL.dSOS);
 dxdtfun = @(x) stableDS(x,GPSSMm,Vclf,rho);
 
 % Evaluate Mean Trajectories on Grid Points
-disp(['Simulate Mean Trajectories...'])
+disp('Simulate Mean Trajectories...')
 Xsim = simj(dxdtfun,Xgrid,optSimLyap,Vclf);
 
 % Integrate Variance and scatter to grid
-disp(['Compute Uncertainty Based Lyapunov Function....'])
+disp('Compute Uncertainty Based Lyapunov Function....')
 logVvar = LyapVar(Xsim,varfun,Intsamp, psn2);
 Vvar = scatteredInterpolant(reshape(Xsim,E,[])',exp(logVvar(:)),'linear');
 
 % Generate Trajectories UCLD
-disp(['Reproduce Paths...'])
+disp('Reproduce Paths...')
 Xtraj = simj(@(x) -kc*gradestj(@(xi) Vvar(xi'),x,eps),x0,optSimtraj,@(xi)Vvar(xi'),dxdtfun);
 
 
 
 %% D --- Visualize
-dss = 2; % density of stream slice
-
+disp('Visualize...')
 Ndte = floor(nthroot(Nte,E)); % Nte = Ndte^E;
 Xte = ndgridj(min(Xtr,[],2)-gmte, max(Xtr,[],2)+gmte,Ndte*ones(E,1)) ;
 Xte1 = reshape(Xte(1,:),Ndte,Ndte); Xte2 = reshape(Xte(2,:),Ndte,Ndte);
 
 
-%% Stabilized GPSSM + GPvar
+% Stabilized GPSSM + GPvar
 figure; hold on; axis tight;
-title('Stabilized GPSSM + GPvar')
+title('Stabilized GPSSM + GP variance')
 surf(Xte1,Xte2,reshape(sqrt(sum(varfun(Xte).^2,1))-1e4,Ndte,Ndte),'EdgeColor','none','FaceColor','interp');
-
 Xte_vec = dxdtfun(Xte);
 streamslice(Xte1,Xte2,reshape(Xte_vec(1,:),Ndte,Ndte),reshape(Xte_vec(2,:),Ndte,Ndte),dss);
 quiver(Xtr(1,:),Xtr(2,:),dXtr(1,:),dXtr(2,:),'k','AutoScale','off');
 
 
-%% UCLD approach
-
-% plot Trajectories
+% UCLD approach
 figure; hold on; axis tight
-title('Vvar + Trajectories')
+title('Control Lyapunov function + Trajectories')
 surf(Xte1,Xte2,reshape(min(Vvar(Xte'),8e3),Ndte,Ndte)-1e4,'EdgeColor','none','FaceColor','interp');
-
-if isnumeric(Xtraj)
-    plot(squeeze(Xtraj(1,:,:)),squeeze(Xtraj(2,:,:)),'r');
-else
-    for i=1:length(Xtraj)
-        plot(Xtraj{i}(:,1),Xtraj{i}(:,2),'r'); 
-    end
-end
+plot(squeeze(Xtraj(1,:,:)),squeeze(Xtraj(2,:,:)),'r');
 quiver(Xtr(1,:),Xtr(2,:),dXtr(1,:),dXtr(2,:),'k','AutoScale','off');
+
+disp('Pau...')

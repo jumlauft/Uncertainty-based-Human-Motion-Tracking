@@ -1,4 +1,4 @@
-function comb=getExpoMatrix(E,D)
+function comb = getExpoMatrix(E,D)
 % Computes all possible combinations to choose E integers (not distinct)
 % such that they add up to a number less or equal to D
 % In: 
